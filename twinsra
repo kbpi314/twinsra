@@ -1,0 +1,97 @@
+############
+# Twins RA #
+############
+
+# made new mapping file  qiime_mapping_file_noctrl_no182183.tsv 
+# copy to /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/
+# new jobfile @ /sc/arion/projects/clemej05a/kevin/twinsra/jobs/jobfile_kb0.lsf
+
+# AC run in studies
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_TWINS_RA_0/Qiime2_0
+
+# jobfile for post contam filtering
+/sc/arion/projects/clemej05a/kevin/twinsra/jobs/jobfile_kb0.lsf
+
+
+
+# Fig 2 comparison of distances, intertwin vs interdisease
+
+
+# 
+
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate qiime2-2020.8.0;
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/weighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/weighted_unifrac_distance_matrix.tsv \
+--output-format .tsv
+
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/weighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/
+
+cp /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/weighted_unifrac_distance_matrix.tsv 
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/unweighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/
+
+cp /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_results/unweighted_unifrac_distance_matrix.tsv 
+
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_10k/unweighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_10k/
+
+cp /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_10k/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/core_metrics_10k/unweighted_unifrac_distance_matrix.tsv 
+
+
+
+# TODO
+# LEfSe
+# We should incorporate paired nature of data and have like control twins (to get baseline of twin differences)
+# 
+
+# done at login node bc fast hopefully
+qiime feature-table filter-samples \
+--i-table  /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/taxa_collapsed_table_L6.qza   \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/qiime_mapping_file_noctrl_no182183.tsv \
+--p-where '[Diagnosis] IN ("RA", "Unaffected")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/twinsra/inputs/L6_noctrl_no182183_nocontam.qza
+
+# LEfSe input
+/sc/arion/projects/clemej05a/kevin/twinsra/inputs/L6_noctrl_no182183_nocontam.qza
+/sc/arion/projects/clemej05a/kevin/twinsra/inputs/qiime_mapping_file_noctrl_no182183.tsv 
+
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate /sc/arion/projects/MMEDS/.modules/lefse
+
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_TWINS_RA_0/Lefse_0/lefse_results.res /sc/arion/projects/clemej05a/kevin/twinsra/graphs/L6_RAvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+
+# grab an L7 table for LEfSe
+qiime taxa collapse --i-table /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/filtered_table.qza --i-taxonomy /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/taxonomy.qza --p-level 7 --o-collapsed-table /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/taxa_collapsed_table_L7.qza
+
+qiime feature-table filter-samples \
+--i-table  /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/taxa_collapsed_table_L7.qza   \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/qiime_mapping_file_noctrl_no182183.tsv \
+--p-where '[Diagnosis] IN ("RA", "Unaffected")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/twinsra/inputs/L7_noctrl_no182183_nocontam.qza
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_TWINS_RA_0/Lefse_1/lefse_results.res /sc/arion/projects/clemej05a/kevin/twinsra/graphs/L7_RAvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+# try this for a stacked barplot
+source activate /sc/arion/projects/MMEDS/admin_modules/mmeds-stable;
+make_grouped_mapping_file.py --m-metadata-file $RUN_Qiime2_KB/qiime_mapping_file_noctrl_no182183.tsv --m-metadata-column Diagnosis --o-grouped-metadata-file $RUN_Qiime2_KB/grouped_Diagnosis_mapping_file_noctrl_no182183.tsv;
+
+
+
