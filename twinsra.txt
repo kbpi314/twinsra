@@ -27,7 +27,7 @@ outputs/
 	jobs05							# Metaphlan4 + ANCOM
 	jobs06							# LEfSe
 	jobs07							# DGCA pearson unpaired
-	jobs08							# shotgun diversities
+	jobs08							# shotgun diversities; has taxa bar plot for shotgun!
 	jobs09							# DGCA spearman unpaired
 	jobs10							# DGCA pearson unpaired fdr
 	jobs11							# DGCA spearman unpaired fdr
@@ -78,7 +78,6 @@ source activate /sc/arion/projects/clemej05a/adam/conda/envs/humann3
 
 # need ml proxies to get access to external addresses from a job
 
-# can find Kraken db from JL's scripts in hippgut_stool_kneaddata or something like that
 
 
 
@@ -156,14 +155,25 @@ python setup.py install --prefix=/hpc/users/buk02/tools/sandbox/
 # after module purge or mp, ml anaconda3
 source activate /sc/arion/work/buk02/conda/Ensemble
 
+# install in env
+python setup.py install
+
 # cd into ensemble project dir, in this case ensemble_kraken
-python create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t Kraken
+# how to make it so that conda looks in the right place for a python executable given that it doesn't use PYTHONPATH
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t Kraken
 
 # borrowed ensemble_config.yaml from Metaphlan run :) 
-# modify tool_config with the db path /sc/arion/projects/CVDlung/databases/ensemble-kraken/kraken_install/kraken_db
+# look in Jakleen's Kraken run!
+# modify tool_config.yaml NOT ensemble_config.yaml with the db path /sc/arion/projects/CVDlung/databases/ensemble-kraken/kraken_install/kraken_db
 
 # then gen scripts
-python /hpc/users/buk02/Repositories/ensemble/scripts/gen_scripts.py -p twinsra -a true
+# THIS WAS VERY SILLY
+# I RENAMED Kraken_template.sh to metaphlan_tempplate.sh and stored the mp one as a duplicate original
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_scripts.py -p twinsra 
+-a true
+
+# combine taxa tables?
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_taxa_tables.py -p twinsra --tool_threshold 1
 
 
 
@@ -286,6 +296,10 @@ humann_renorm_table -i humann3_joined_KO.tsv -u relab -s n -o humann3_joined_KO_
 
 humann_renorm_table -i humann3_joined_pathabundance.tsv -u relab -s n -o humann3_joined_pathabundance_no_misses_relabund.tsv
 
+# BRITE, 10 year old 2013 database file
+/sc/arion/projects/MMEDS/pathway_analysis
+
+python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar.tsv -r /sc/arion/projects/MMEDS/pathway_analysis/KO_BRITE_map_descrip.tsv -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar_brite.tsv
 
 
 
