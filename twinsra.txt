@@ -6,24 +6,22 @@
 # Directory mapping
 ###
 
+
 inputs/
-	adamcantor22_TWINS_RA_0 		# OG run from AC
-	Qiime2_0_KB						# qiime_mapping_file_noctrl_no182183.tsv
-	Qiime2_1_KB						# contams removed, run on a new asv table from AC
-									# contains qiime_mapping_file_noctrl_no182183_ensemble.tsv which has sample str formatted correctly w shotgun fastq's
+	qiime_mapping_file_noctrl_no182183_no516517_ensemble.tsv
+
 outputs/
-	ensemble_humann3 				# ensemble project dir with humann3 pathway results
-	ensemble_output					# ensemble project dir with MP4 results
-	jobs__01						# old CUTIE results, archives
-	jobs__02
-	visualizations_dir_L3			# DMM results
 	visualizations_dir_L6
 	visualizations_dir_L7
-	jobs00							# various 16S cutie results, forward backward, aggregate, by disease
-	jobs01
-	jobs02
-	jobs03
-	jobs04	
+	jobs00							# metaphlan, biom, taxa table
+	jobs01 							# ANCOM
+	jobs02 							# alpha and beta div
+	jobs03							# taxonomy file
+	jobs04							# taxa bar plot
+	jobs05							# DMM
+
+
+
 	jobs05							# Metaphlan4 + ANCOM
 	jobs06							# LEfSe
 	jobs07							# DGCA pearson unpaired
@@ -35,6 +33,24 @@ outputs/
 	jobs13							# DGCA spearman unpaired nofdr, with olink filtered
 	jobs14							# procrustes
 	jobs15 							# Alba EISER UPGMA and Kmeans
+	jobs16							# CUTIE on test data
+	jobs17							# UA corrs, asv vs rest
+	jobs18							# RA corrs
+	jobs19							# DGCA heatmap for all variables 
+
+
+###
+# Input data
+###
+
+# has all the reads from the run 
+/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined
+
+# but all the ones pertaining to the study (not 182/183 and 516/517) are in this folder; the rest were moved back into combined
+/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra
+
+# for KD
+/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra_kneaddata
 
 
 ###
@@ -42,41 +58,335 @@ outputs/
 ###
 
 # Q2 env
+module purge
 PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
 export LC_ALL=en_US.UTF-8;
 ml anaconda3;
 source activate qiime2-2020.8.0;
 
-
 # AC Humann3 env
 source activate /sc/arion/projects/clemej05a/adam/conda/envs/humann3
 
-
-
-###
-# original data and qiime2 runs from JC and AC
-###
-
-# original data, per Jose
-/sc/arion/projects/clemej05a/AMPAIM/inputs/MSQ12
-
-# AC run in studies
-# jobfile0 is w contams, jobfile1 is w contams REMOVED!
-/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_TWINS_RA_0/Qiime2_0
-
-# twins metagenomic data
-/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined
 
 ###
 # Ensemble
 ###
 
-# install/pull repo, located in /hpc/users/buk02/Repositories/ensemble
-# then create env with specified location non default given it takes 9.3G and users is limited to 5G or so
-# specifically done in ensemble.lsf inside /hpc/users/Repositories/ensemble/
-/hpc/users/buk02/Repositories/ensemble/create_conda_environments.sh /sc/arion/work/buk02/conda
+# made new env; took about 48 hours
+# need ml proxies to get access to external addresses from a job; this is a line in the job file 
+# need to specify conda prefix; e.g. run /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/create_conda_environments.sh /sc/arion/projects/clemej05a/kevin/test-env/envs/
+/sc/arion/projects/clemej05a/kevin/Repositories/ensemble/ensemble.lsf via 
+/sc/arion/projects/clemej05a/kevin/Repositories/ensemble/create_conda_environments.sh
 
-# need ml proxies to get access to external addresses from a job
+# enhancement MP4 branch
+git checkout remotes/origin/Enhancement-Metaphlan
+
+# after module purge or mp, ml anaconda3
+source activate ensemble
+
+# install in env
+python setup.py install # --user this flag will install to user and not to ensemble env
+
+# create new project dir for KD
+# run this inside outputs/ensemble_kneaddata
+# -st tag tells you to grab config templates from a particular folder
+create_project.py -p twinsra_kneaddata -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t Kneaddata -st clemente_lab
+
+
+# for KD; take from /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/MECONIUM_Group09
+# (1) ensemble_config.yaml  # modify this with data path
+cp /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/MECONIUM_Group09/ensemble_config.yaml /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_kneaddata/configuration/twinsra_kneaddata/
+
+# (2) kneaddata_template.sh # modify env to source activate /sc/arion/projects/clemej05a/adam/conda/envs/kneaddata
+cp /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/MECONIUM_Group09/kneaddata_template.sh /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_kneaddata/configuration/twinsra_kneaddata/
+
+# (3) tool_config.yaml
+cp /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/MECONIUM_Group09/tool_config.yaml /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_kneaddata/configuration/twinsra_kneaddata/
+
+# run this inside outputs/ensemble_kneaddata
+gen_scripts.py -p twinsra_kneaddata # -a true
+
+# I had to change for this install, hopefully not next time
+# replace the old top line in test-env/gen_scripts and create_project
+#!/sc/arion/projects/clemej05a/kevin/test-env/envs/Ensemble/bin/python 
+# experiment with one job
+Kneaddata_500A.sh 
+
+
+
+
+###
+# MP4
+
+
+###
+# Kraken
+
+# cd into ensemble project dir, in this case ensemble_kraken
+# how to make it so that conda looks in the right place for a python executable given that it doesn't use PYTHONPATH
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t Kraken
+
+# borrowed ensemble_config.yaml from Metaphlan run :) 
+# look in Jakleen's Kraken run!
+# modify tool_config.yaml NOT ensemble_config.yaml with the db path /sc/arion/projects/CVDlung/databases/ensemble-kraken/kraken_install/kraken_db
+
+# then gen scripts
+# THIS WAS VERY SILLY
+# I RENAMED Kraken_template.sh to metaphlan_tempplate.sh and stored the mp one as a duplicate original
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_scripts.py -p twinsra 
+-a true
+
+# combine taxa tables?
+python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_taxa_tables.py -p twinsra --tool_threshold 1
+
+
+
+###
+# Diversities with MP4
+###
+
+# filter out old metaphlan table
+/sc/arion/projects/clemej05a/kevin/twinsra/inputs/metaphlan_taxa_table_no182183.tsv
+
+# edit locally in pandas to delete col 516A and 517A
+# scp back to following, keeping fn consistent 
+jobs00/metaphlan_taxa_table_abs.tsv
+
+# boot up Q2 env to convert to biom
+biom convert --to-hdf5 -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.tsv -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.biom
+
+# convert biom to qza
+qiime tools import --type 'FeatureTable[Frequency]' --input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.biom --output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.qza
+
+# ANCOM: add pseudo_count, and convert 
+qiime composition add-pseudocount --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.qza --o-composition-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs_pseudocount.qza
+
+# ANCOM computation in jobs01
+qiime composition ancom --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs_pseudocount.qza --m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/qiime_mapping_file_noctrl_no182183_no516517_ensemble.tsv --p-transform-function log --m-metadata-column Diagnosis --o-visualization /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs01/ancom-Diagnosis-Metaphlan.qzv
+
+# diversity analyses in jobs02 
+# originally scripts (or code)
+# JL_run_core_metrics.sh, JL_run_core_metrics_alpha_analysis.sh, JL_run_core_metrics_beta_analysis.sh
+# renamed to run_core_metrics.sh, etc.
+# ensure the following replacements are made 
+input_fp=/sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.qza
+depth=118000
+metadata_fp=/sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/qiime_mapping_file_noctrl_no182183_no516517_ensemble.tsv
+output_dir=/sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/
+# manually saved each alpha div tsv metadata as 'metadata_shannon.tsv' etc. from Q2 view
+
+# convert distance matrix to tsv
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/bray_curtis_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/
+
+# scp this to local after copying
+cp /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/bray_curtis_distance_matrix.tsv
+
+
+# make new taxa table for taxonomy file; this is done locally
+gen_taxa_tables.py -p twinsra 
+--tool_threshold 1
+
+# Will need new vis method?
+ml qiime/2022.11
+UMAP t-SNE option?
+
+MP4: convert to biom
+
+Feature ID Taxon Confidence 
+OG str		Modified str			0.99
+' ' -> '_'
+'|' -> '; '
+
+qiime tools import \
+    --type 'FeatureData[Taxonomy]' \
+    --input-path $txt_fp \
+    --output-path $taxonomy_fp
+
+qiime taxa barplot \
+  --i-table $table_fp \
+  --i-taxonomy $taxonomy_fp \
+  --m-metadata-file $metadata_fp \
+  --o-visualization $plot_fp
+
+
+# convert local taxonomy table to qza
+qiime tools import \
+    --type 'FeatureData[Taxonomy]' \
+    --input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs03/df_taxonomy.tsv \
+    --output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs03/taxonomy.qza
+
+qiime taxa barplot \
+  --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00/metaphlan_taxa_table_abs.qza \
+  --i-taxonomy /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs03/taxonomy.qza \
+  --m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/qiime_mapping_file_noctrl_no182183_no516517_ensemble.tsv \
+  --o-visualization /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs04/taxa_barplot_vis.qzv
+
+# for DMM purposes
+
+
+
+
+
+
+
+
+
+
+###
+# Humann3 table manipulation
+###
+
+# so e.g. for join tables, 
+humann_join_tables -i humann3_outputs --file_name KO -s -o EISER_joined_KO_pathways.tsv 
+
+# this isffor UniRef90 gene families
+humann_join_tables -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_output/Humann2 --file_name genefamilies -s -o humann3_joined_genefamilies.tsv 
+
+# this is for pathways
+humann_join_tables -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_output/Humann2 --file_name pathabundance -s -o humann3_joined_pathabundance.tsv 
+
+# the -i is the folder you keep the files in, the --file_name is the string that all of the files to be joined h# ave in common, -s tells it to search subdirectories
+
+# to go from UniRef90 to KOs, you can use 
+humann_regroup_table -i EISER_joined_genefamilies.tsv -g uniref90_ko -o EISER_KOs_with_misses.tsv
+
+# to renorm you just use 
+humann_renorm_table -i EISER_KO_names.tsv -u relab -s n -o EISER_KO_names_no_misses_relabund.tsv
+# where -s y/n is whether or not to include the annotations "UNMAPPED" "UNINTEGRATED" and "UNGROUPED"
+
+humann_renorm_table -i humann3_joined_KO.tsv -u relab -s n -o humann3_joined_KO_no_misses_relabund.tsv
+
+humann_renorm_table -i humann3_joined_pathabundance.tsv -u relab -s n -o humann3_joined_pathabundance_no_misses_relabund.tsv
+
+# BRITE, 10 year old 2013 database file
+/sc/arion/projects/MMEDS/pathway_analysis
+
+python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar.tsv -r /sc/arion/projects/MMEDS/pathway_analysis/KO_BRITE_map_descrip.tsv -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar_brite.tsv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 
+# Humann3
+###
+
+# mkdir ensemble_humann3, cd into it
+# conda activate Ensemble; one -t per tool
+create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t humann2
+
+
+# ?copy config from original metaphlan run, then check humann2 (really humann3) settings from Adam's jobs 
+# compare the config
+# also copy humann config from /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/CP04430/humann2_template.sh 
+# make sure you add in the env path /sc/arion/projects/clemej05a/adam/conda/envs/humann3 under source activate humann3!!! 
+
+# set concat-lane_files: false, tool_threshold: 0
+diff ensemble_config.yaml /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/CP04430/ensemble_config.yaml 
+
+# then gen scripts
+gen_scripts.py -p twinsra -a true
+
+
+
+###
+# CUTIE on RA UA asv against other quant vars (non path)
+###
+
+mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs17
+echo 'ml anaconda3 && source activate cutie && calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_forward.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_forward.txt
+
+python /sc/arion/projects/clemej05a/kevin/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_forward.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_RA_forward -n 1 -w 24:00 -s True
+
+mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs18
+echo 'ml anaconda3 && source activate cutie && calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_UA_forward.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_UA_forward.txt
+
+python /sc/arion/projects/clemej05a/kevin/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_UA_forward.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_UA_forward -n 1 -w 24:00 -s True
+
+
+
+### 
+# CUTIE on test asv and meta 
+# note cutie is installed :) in test-envs, but labtools has issues 
+
+mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs16
+echo 'ml anaconda3 && source activate cutie && calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_test_forward.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_test_forward.txt
+
+python /sc/arion/projects/clemej05a/kevin/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_test_forward.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_RA_test_forward -n 1 -w 1:00 -s True
+
+emacs -nw /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_RA_test_forward.ini 
+
+[input]
+samp_var1_fp: /sc/arion/projects/clemej05a/kevin/twinsra/inputs/df_asv_RA_test.tsv
+delimiter1: \t
+samp_var2_fp: /sc/arion/projects/clemej05a/kevin/twinsra/inputs/df_quant_RA_test.tsv
+delimiter2: \t
+f1type: tidy
+f2type: tidy
+skip1: 0
+skip2: 0
+startcol1: -1
+endcol1: -1
+startcol2: -1
+endcol2: -1
+paired: False
+overwrite: True
+
+[output]
+working_dir: /sc/arion/projects/clemej05a/kevin/twins/outputs/jobs16/
+overwrite: True
+
+[stats]
+param: p
+statistic: spearman
+resample_k: 1
+alpha: 0.05
+mc: nomc
+fold: False
+fold_value: 1
+corr_compare: False
+
+[graph]
+graph_bound: 100
+fix_axis: False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -148,159 +458,6 @@ python setup.py install --prefix=/hpc/users/buk02/tools/sandbox/
 
 
 
-###
-# Kraken
-###
-
-# after module purge or mp, ml anaconda3
-source activate /sc/arion/work/buk02/conda/Ensemble
-
-# install in env
-python setup.py install
-
-# cd into ensemble project dir, in this case ensemble_kraken
-# how to make it so that conda looks in the right place for a python executable given that it doesn't use PYTHONPATH
-python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t Kraken
-
-# borrowed ensemble_config.yaml from Metaphlan run :) 
-# look in Jakleen's Kraken run!
-# modify tool_config.yaml NOT ensemble_config.yaml with the db path /sc/arion/projects/CVDlung/databases/ensemble-kraken/kraken_install/kraken_db
-
-# then gen scripts
-# THIS WAS VERY SILLY
-# I RENAMED Kraken_template.sh to metaphlan_tempplate.sh and stored the mp one as a duplicate original
-python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_scripts.py -p twinsra 
--a true
-
-# combine taxa tables?
-python /sc/arion/projects/clemej05a/kevin/Repositories/ensemble/scripts/gen_taxa_tables.py -p twinsra --tool_threshold 1
-
-
-
-
-
-###
-# Shotgun diversities: jobs08
-###
-
-# Alpha
-# 1. Take metaphlan table and convert to 'Qiime classic' with untidy format and #OTU ID as index name
-# 2. Convert to biom
-# 3. Import as qza 
-
-# This was done for ANCOM :) see below
-/sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.qza
-
-# 4. pass through JL core metrics script
-
-input_fp=/sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.qza
-depth=118000
-metadata_fp=/sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/qiime_mapping_file_noctrl_no182183_ensemble.tsv
-output_dir=/sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/
-
-
-# 5. run alpha and beta div 
-# convert distance matrix to tsv
-
-qiime tools export \
---input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/Q2_outputs/bray_curtis_distance_matrix.qza \
---output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/Q2_outputs/
-
-cp /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/Q2_outputs/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/Q2_outputs/bray_curtis_distance_matrix.tsv
-
-# make new taxa table for taxonomy file
-gen_taxa_tables.py -p twinsra 
---tool_threshold 1
-
-# Will need new vis method?
-ml qiime/2022.11
-UMAP t-SNE option?
-
-MP4: convert to biom
-
-Feature ID Taxon Confidence 
-OG str		Modified str			0.99
-' ' -> '_'
-'|' -> '; '
-
-qiime tools import \
-    --type 'FeatureData[Taxonomy]' \
-    --input-path $txt_fp \
-    --output-path $taxonomy_fp
-
-qiime taxa barplot \
-  --i-table $table_fp \
-  --i-taxonomy $taxonomy_fp \
-  --m-metadata-file $metadata_fp \
-  --o-visualization $plot_fp
-
-
-qiime tools import \
-    --type 'FeatureData[Taxonomy]' \
-    --input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/df_taxonomy.tsv \
-    --output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/taxonomy.qza
-
-qiime taxa barplot \
-  --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_projects/twinsra/ensemble_output_L7/metaphlan_taxa_table_abs.qza \
-  --i-taxonomy /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/taxonomy.qza \
-  --m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/qiime_mapping_file_noctrl_no182183_ensemble.tsv \
-  --o-visualization /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs08/taxa_barplot_vis.qzv
-
-# saved csvs as L6 and L7_table.csv
-
-
-###
-# Alba clustering
-###
-
-qiime tools export \
---input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs15/bray_curtis_distance_matrix.qza \
---output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs15/
-
-
-
-###
-# DGCA
-###
-ml R
-Rscript <script.R>
-
-
-
-
-###
-# Humann3 table manipulation
-###
-
-# so e.g. for join tables, 
-humann_join_tables -i humann3_outputs --file_name KO -s -o EISER_joined_KO_pathways.tsv 
-
-# this isffor UniRef90 gene families
-humann_join_tables -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_output/Humann2 --file_name genefamilies -s -o humann3_joined_genefamilies.tsv 
-
-# this is for pathways
-humann_join_tables -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_output/Humann2 --file_name pathabundance -s -o humann3_joined_pathabundance.tsv 
-
-# the -i is the folder you keep the files in, the --file_name is the string that all of the files to be joined h# ave in common, -s tells it to search subdirectories
-
-# to go from UniRef90 to KOs, you can use 
-humann_regroup_table -i EISER_joined_genefamilies.tsv -g uniref90_ko -o EISER_KOs_with_misses.tsv
-
-humann_regroup_table -i humann3_joined_genefamilies.tsv -g uniref90_ko -o humann3_joined_KO.tsv
-
-# to renorm you just use 
-humann_renorm_table -i EISER_KO_names.tsv -u relab -s n -o EISER_KO_names_no_misses_relabund.tsv
-# where -s y/n is whether or not to include the annotations "UNMAPPED" "UNINTEGRATED" and "UNGROUPED"
-
-humann_renorm_table -i humann3_joined_KO.tsv -u relab -s n -o humann3_joined_KO_no_misses_relabund.tsv
-
-humann_renorm_table -i humann3_joined_pathabundance.tsv -u relab -s n -o humann3_joined_pathabundance_no_misses_relabund.tsv
-
-# BRITE, 10 year old 2013 database file
-/sc/arion/projects/MMEDS/pathway_analysis
-
-python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar.tsv -r /sc/arion/projects/MMEDS/pathway_analysis/KO_BRITE_map_descrip.tsv -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/humann3_joined_KO_no_misses_relabund_nobar_brite.tsv
-
 
 
 ###
@@ -312,56 +469,6 @@ python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierar
 lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_TWINS_RA_0/Lefse_0/lefse_results.res /sc/arion/projects/clemej05a/kevin/twinsra/graphs/L6_RAvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
 
 
-###
-# ANCOM: jobs05 for ensemble abs ANCOM
-###
-
-cp /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_projects/twinsra/ensemble_output/metaphlan_taxa_table.tsv /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.tsv
-
-biom convert --to-hdf5 -i /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.tsv -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05//metaphlan_taxa_table_abs.biom
-
-# qiime tools import --type 'FeatureTable[Frequency]' --input-path $biom --output-path $qza
-
-qiime tools import --type 'FeatureTable[Frequency]' --input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.biom --output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.qza
-
-# take qza, add pseudo count
-
-qiime composition add-pseudocount --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs.qza --o-composition-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs_pseudocount.qza
-
-qiime composition ancom --i-table /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/metaphlan_taxa_table_abs_pseudocount.qza --m-metadata-file /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_1_KB/qiime_mapping_file_noctrl_no182183_ensemble.tsv --p-transform-function log --m-metadata-column Diagnosis --o-visualization /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs05/ancom-Diagnosis-Metaphlan.qzv
-
-
-### 
-# Humann3
-###
-
-# mkdir ensemble_humann3, cd into it
-# conda activate Ensemble; one -t per tool
-create_project.py -p twinsra -d /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/ -t humann2
-
-
-# ?copy config from original metaphlan run, then check humann2 (really humann3) settings from Adam's jobs 
-# compare the config
-# also copy humann config from /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/CP04430/humann2_template.sh 
-# make sure you add in the env path /sc/arion/projects/clemej05a/adam/conda/envs/humann3 under source activate humann3!!! 
-
-# set concat-lane_files: false, tool_threshold: 0
-diff ensemble_config.yaml /sc/arion/projects/clemej05a/adam/ensemble_projects/configuration/CP04430/ensemble_config.yaml 
-
-# then gen scripts
-gen_scripts.py -p twinsra -a true
-
-
-###
-# CUTIE
-###
-
-# CUTIE SJC TJC L6 all samples
-
-mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs03
-echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward_all.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward_all.txt
-
-python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward_all.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_L6_meta_forward_all -n 2 -w 1:00 -s True
 
 
 
@@ -452,34 +559,6 @@ source activate /sc/arion/projects/MMEDS/admin_modules/mmeds-stable;
 make_grouped_mapping_file.py --m-metadata-file $RUN_Qiime2_KB/qiime_mapping_file_noctrl_no182183.tsv --m-metadata-column Diagnosis --o-grouped-metadata-file $RUN_Qiime2_KB/grouped_Diagnosis_mapping_file_noctrl_no182183.tsv;
 
 
-# CUTIE
 
-# CUTIE SJC TJC w L6, this is RA only
-mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs01
-echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward.txt
-
-python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_forward.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_L6_meta_forward -n 2 -w 1:00 -s True
-
-mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02
-echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse.txt
-
-python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_L6_meta_reverse -n 2 -w 1:00 -s True
-
-
-
-# CUTIE on L3
-# data: /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB/level-3.csv
-# config: /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L3_forward.ini
-
-mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs00
-echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L3_forward.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L3_forward.txt
-
-python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L3_forward.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_L3_forward -n 2 -w 1:00 -s True
-
-
-mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs04
-echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse_all.ini' > /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse_all.txt
-
-python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/twinsra/jobs/cutie_L6_meta_reverse_all.txt -o /sc/arion/projects/clemej05a/kevin/twinsra/jobs/ -N cutie_L6_meta_reverse_all -n 2 -w 1:00 -s True
 
 
