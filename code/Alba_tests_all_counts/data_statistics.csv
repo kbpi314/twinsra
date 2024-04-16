@@ -1,0 +1,8 @@
+"","DeliveryMode","Specimen","n","mean(Total.cells.cm2, na.rm = TRUE)"
+"1","Csection","Buccal_swab",66,13871684.4161397
+"2","Csection","Forehead_swab",70,2575304.11651357
+"3","Csection","Gauze",77,60493424.3470909
+"4","Csection","Vaginal_swab",80,414463972.812553
+"5","Vaginal","Buccal_swab",32,41282709.8003625
+"6","Vaginal","Forehead_swab",34,3903612.61076941
+"7","Vaginal","Vaginal_swab",48,81398587.3398511

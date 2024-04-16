@@ -1,0 +1,66 @@
+
+	Pairwise comparisons using Wilcoxon rank sum test with continuity correction 
+
+data:  data_long$Total.cells.cm2 and data_long$Sample_Delivery 
+
+                       Csection_Buccal_swab Csection_Forehead_swab Csection_Gauze
+Csection_Forehead_swab 3.0e-13              -                      -             
+Csection_Gauze         5.8e-10              < 2e-16                -             
+Csection_Vaginal_swab  < 2e-16              < 2e-16                < 2e-16       
+Vaginal_Buccal_swab    0.00042              < 2e-16                0.46108       
+Vaginal_Forehead_swab  1.7e-05              0.10382                < 2e-16       
+Vaginal_Vaginal_swab   2.6e-13              < 2e-16                0.03987       
+                       Csection_Vaginal_swab Vaginal_Buccal_swab Vaginal_Forehead_swab
+Csection_Forehead_swab -                     -                   -                    
+Csection_Gauze         -                     -                   -                    
+Csection_Vaginal_swab  -                     -                   -                    
+Vaginal_Buccal_swab    2.0e-13               -                   -                    
+Vaginal_Forehead_swab  < 2e-16               1.5e-10             -                    
+Vaginal_Vaginal_swab   3.2e-11               0.03987             < 2e-16              
+
+P value adjustment method: holm 
+[1] "/"
+
+	Pairwise comparisons using Wilcoxon rank sum test with continuity correction 
+
+data:  data_long$Total.cells.cm2 and data_long$Sample_Delivery 
+
+                       Csection_Buccal_swab Csection_Forehead_swab Csection_Gauze
+Csection_Forehead_swab 3.0e-13              -                      -             
+Csection_Gauze         5.8e-10              < 2e-16                -             
+Csection_Vaginal_swab  < 2e-16              < 2e-16                < 2e-16       
+Vaginal_Buccal_swab    0.00042              < 2e-16                0.46108       
+Vaginal_Forehead_swab  1.7e-05              0.10382                < 2e-16       
+Vaginal_Vaginal_swab   2.6e-13              < 2e-16                0.03987       
+                       Csection_Vaginal_swab Vaginal_Buccal_swab Vaginal_Forehead_swab
+Csection_Forehead_swab -                     -                   -                    
+Csection_Gauze         -                     -                   -                    
+Csection_Vaginal_swab  -                     -                   -                    
+Vaginal_Buccal_swab    2.0e-13               -                   -                    
+Vaginal_Forehead_swab  < 2e-16               1.5e-10             -                    
+Vaginal_Vaginal_swab   3.2e-11               0.03987             < 2e-16              
+
+P value adjustment method: holm 
+[1] "/"
+
+	Pairwise comparisons using Wilcoxon rank sum test with continuity correction 
+
+data:  data_long$Total.cells.cm2 and data_long$Sample_Delivery 
+
+                       Csection_Buccal_swab Csection_Forehead_swab Csection_Gauze
+Csection_Forehead_swab 3.0e-13              -                      -             
+Csection_Gauze         5.4e-10              < 2e-16                -             
+Csection_Vaginal_swab  < 2e-16              < 2e-16                < 2e-16       
+Vaginal_Buccal_swab    0.00042              < 2e-16                0.44559       
+Vaginal_Forehead_swab  1.7e-05              0.10382                < 2e-16       
+Vaginal_Vaginal_swab   2.6e-13              < 2e-16                0.04675       
+                       Csection_Vaginal_swab Vaginal_Buccal_swab Vaginal_Forehead_swab
+Csection_Forehead_swab -                     -                   -                    
+Csection_Gauze         -                     -                   -                    
+Csection_Vaginal_swab  -                     -                   -                    
+Vaginal_Buccal_swab    2.0e-13               -                   -                    
+Vaginal_Forehead_swab  < 2e-16               1.5e-10             -                    
+Vaginal_Vaginal_swab   3.2e-11               0.03987             < 2e-16              
+
+P value adjustment method: holm 
+[1] "/"

@@ -1,0 +1,31 @@
+#!/bin/bash
+#BSUB -P acc_clemej05a
+#BSUB -n 1
+#BSUB -q premium
+#BSUB -W 24:00
+#BSUB -J humann2_500A
+#BSUB -R "span[hosts=1]"
+#BSUB -R rusage[mem=30000]
+#BSUB -o /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_logging/Humann2/%J.stdout
+#BSUB -eo /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_logging/Humann2/%J.stderr
+#BSUB -L /bin/bash
+
+# this is new
+mkdir /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/
+
+# modify this to output in specific temp directory
+gunzip -c /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/500A_R1.fastq.gz > /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A_R1.fastq; gunzip -c /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/500A_R2.fastq.gz > /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A_R2.fastq
+
+# this is wrong, comment it out to use correct file paths 
+# cat /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/500A_R1.fastq /sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined/twinsra/500A_R2.fastq > /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A.fastq
+cat /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A_R1.fastq /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A_R2.fastq > /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A.fastq
+
+module purge
+ml anaconda3
+source activate /sc/arion/projects/clemej05a/adam/conda/envs/humann3
+
+humann --input /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A/500A.fastq --output /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/tool_output/Humann2/500A --metaphlan-options "-t rel_ab_w_read_stats --bowtie2db /sc/arion/projects/CVDlung/databases/ensemble-metaphlan" --nucleotide-database /sc/arion/projects/clemej05a/adam/databases/humann3/chocophlan --protein-database /sc/arion/projects/clemej05a/adam/databases/humann3/uniref
+# comment out to remove just 500A temp data
+# rm /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A_R1.fastq; rm /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A_R2.fastq
+rm -rf /sc/arion/projects/clemej05a/kevin/twinsra/outputs/ensemble_humann3/twinsra/temp_data/Humann2/500A
+
