@@ -11,7 +11,7 @@ library(MASS)
 
 setwd('~/Desktop/clemente_lab/Projects/twinsra/')
 
-dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'rbfa', 'mb', 'plasma', 'quant_R', 'asv100', 'path_top100')
+dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'mb', 'quant_R', 'asv_filt', 'path_filt')
 # dfs = c('olink')
 # dfs = c('acpa_fecal')
 # df_quant_meta is just a copy of df_quant
@@ -34,7 +34,6 @@ for(i in 1:length(dfs)){
   df2 <- df3[,-1]
   rownames(df2) <- df3[,1]
   
-  
   # extract feature df and convert to numeric matrix (IMPT!) before hclust
   # useRaster must be true for speedy results
   # features only
@@ -44,7 +43,6 @@ for(i in 1:length(dfs)){
   # playtesting dataset
   # df_feat <- df2[1:20]
   
-  
   # normalize columns
   df_feat_norm<- scale(df_feat)
   
@@ -52,6 +50,7 @@ for(i in 1:length(dfs)){
   mat_feat <- data.matrix(df_feat_norm)
 
   # grab feature annotations  
+  # rename misleading annotations
   df4 = read.table(file=paste('inputs/df_quant_R_labels.tsv',sep=''),sep='\t',header=T)#,row.names=1)#,header=T, row.names=1, stringsAsFactors=F, check.names=F,comment.char='@')
   cols_anno = df4$var_type
   
@@ -82,7 +81,7 @@ for(i in 1:length(dfs)){
   file_path <- paste('/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs19/heatmap_',df,'_meta.pdf',sep='')
   
   
-  pdf(GetoptLong::qq(file_path), width = 6, height=6)  # Image size
+  pdf(GetoptLong::qq(file_path), width = 8, height=6)  # Image size
   
   if (df == 'fa'){
     hm <- Heatmap(mat_feat, use_raster = FALSE,

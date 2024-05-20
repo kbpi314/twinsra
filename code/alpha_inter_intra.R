@@ -106,6 +106,7 @@ bkg <- theme_bw() +
 # choose colors
 col1 <- c("#929aab", "#ce2525")
 col2 <- c("#CD3414", "#0074e4", "#8f8787")
+col2 <- c("#CD3414", "#8f8787", "#0074e4")
 
 # for every plasma analyte in the table, calculate the change in abundance between siblings
 for (i in 1:1) {
