@@ -71,11 +71,30 @@ for(i in 1:length(dfs)){
       xlab(gsub("_", " ", taxa[i])) + 
       bkg
     
-    filename_box.plot = paste(y,taxa[i],".pdf", sep = "_")  
+    filename_box.plot = paste(y,taxa[i],"differential.pdf", sep = "_")  
     fpb = paste(dir, filename_box.plot, sep = "")
     
     pdf(file = fpb, height = 5, width = 5)
     plot(p)
     dev.off()
+    
+    # UA and RA only
+    # for (k in c('UA','RA')){
+    #   p <- ggplot(df, aes_string(x=taxa[i], y=y,color='Diagnosis')) + 
+    #     geom_point()+scale_color_manual(values=c("#ce2525","#929aab"))+
+    #     geom_smooth(data=subset(df,Diagnosis=='RA'),method=lm, color="#ce2525")+
+    #     geom_smooth(data=subset(df,Diagnosis=='Unaffected'),method=lm, color="#929aab")+
+    #     ylab(y) +
+    #     xlab(gsub("_", " ", taxa[i])) + 
+    #     bkg
+    #   
+    #   filename_box.plot = paste(y,taxa[i],"differential.pdf", sep = "_")  
+    #   fpb = paste(dir, filename_box.plot, sep = "")
+    #   
+    #   pdf(file = fpb, height = 5, width = 5)
+    #   plot(p)
+    #   dev.off()
+    #   
+    # }
   }
 }

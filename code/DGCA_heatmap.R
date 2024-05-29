@@ -22,16 +22,23 @@ setwd('~/Desktop/clemente_lab/Projects/twinsra/')
 dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'mb', 'plasma', 'quant')
 dfs = c('quant')
 
+# 17 is UA, 18 is RA
+inputs = c('outputs/jobs18/data_processing/summary_df_resample_1.txt','outputs/jobs17/data_processing/summary_df_resample_1.txt')
+dx = c('RA','UA')
+
 for (j in c('RA','UA','diff')){
-  for(i in 1:length(dfs)){
-    metadf = dfs[i]
+  for(l in 1:length(dfs)){
+    metadf = dfs[l]
     metadata = read.table(file=paste('inputs/df_',metadf,'.tsv',sep=''),sep='\t',header=T, row.names=1, stringsAsFactors=F, check.names=F,comment.char='@')
     
     # Compile Cutie results and calculate corr difference ----------------
     res_dir = '~/Desktop/clemente_lab/Projects/twinsra/outputs/jobs19'
     cutie_res = {}
-    for (i in c('UA', 'RA')) {
-      fp = sprintf('%s/summary_df_%s.tsv', res_dir, i)
+    for (k in 1:2) {
+      i = dx[k]
+    #for (i in c('UA', 'RA')) {
+      # fp = sprintf('%s/summary_df_%s.tsv', res_dir, i)
+      fp = inputs[k]
       df = read.table(fp, sep='\t', header=T, 
                       stringsAsFactors=F, check.names=F)
       # filters to keep variables that are in the metadata file; make sure no OTU here
@@ -73,7 +80,7 @@ for (j in c('RA','UA','diff')){
     #Create a custom color scale
     # https://stackoverflow.com/questions/6919025/how-to-assign-colors-to-categorical-variables-in-ggplot2-that-have-stable-mappin
     library(RColorBrewer)
-    myColors <- brewer.pal(7,"Set1")
+    myColors <- brewer.pal(8,"Set1")
     names(myColors) <- levels(df_anno$var_type)
     colScale <- scale_colour_manual(name = "Feature Type",values = myColors)
     
@@ -90,13 +97,14 @@ for (j in c('RA','UA','diff')){
     # https://www.biostars.org/p/317349/
     ann <- data.frame(cols_anno)
     colnames(ann) <- c('Type')#, 'Type2')
-    colours <- list('Type' = c('Clinical' = myColors[1], 
-                               'Plasma_ACPAs' = myColors[2],
-                               'Fecal_ACPAs' = myColors[3],
-                               'Serum_Cytokines' = myColors[4],
-                               'Stool_Cytokines' = myColors[5],
-                               'Serum_Fatty_Acids' = myColors[6],
-                               'Stool_Fatty_Acids' = myColors[7]))
+  colours <- list('Type' = c('Clinical' = myColors[1], 
+                             'Plasma_ACPAs' = myColors[2],
+                             'Fecal_ACPAs' = myColors[3],
+                             'Serum_Cytokines' = myColors[4],
+                             'Serum_Fatty_Acids' = myColors[5],
+                             'Stool_Fatty_Acids' = myColors[6],
+                             'Metagenomic_ASVs' = myColors[7],
+                             'Metagenomic_Pathways' = myColors[8]))
     
     colAnn <- HeatmapAnnotation(df = ann,
                                 which = 'col',

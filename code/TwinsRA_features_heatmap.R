@@ -12,9 +12,15 @@ library(MASS)
 setwd('~/Desktop/clemente_lab/Projects/twinsra/')
 
 dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'mb', 'quant_R', 'asv_filt', 'path_filt')
+dfs = c('quant_R')
 # dfs = c('olink')
 # dfs = c('acpa_fecal')
 # df_quant_meta is just a copy of df_quant
+
+# create annotations
+df_anno = read.table(file=paste('inputs/df_quant_R_corr_labels.tsv',sep=''),sep='\t',header=T)#,row.names=1)#,header=T, row.names=1, stringsAsFactors=F, check.names=F,comment.char='@')
+cols_anno = df_anno$var_type
+
 for(i in 1:length(dfs)){
   # grab string
   df = dfs[i]
@@ -67,8 +73,34 @@ for(i in 1:length(dfs)){
 
   write.matrix(mat_feat,file=paste('/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs19/mat_',df,'_meta.tsv',sep=''), sep='\t')
   
-  column_ha = columnAnnotation(VarType=cols_anno)# = df_pc$pc1, bar1 = anno_barplot(df_pc$pc2))
-
+  #Create a custom color scale
+  # https://stackoverflow.com/questions/6919025/how-to-assign-colors-to-categorical-variables-in-ggplot2-that-have-stable-mappin
+  library(RColorBrewer)
+  myColors <- brewer.pal(8,"Set1")
+  names(myColors) <- levels(df_anno$var_type)
+  colScale <- scale_colour_manual(name = "Feature Type",values = myColors)
+  
+  # set color annotation
+  # https://www.biostars.org/p/317349/
+  ann <- data.frame(cols_anno)
+  colnames(ann) <- c('Type')#, 'Type2')
+  colours <- list('Type' = c('Clinical' = myColors[1], 
+                             'Plasma_ACPAs' = myColors[2],
+                             'Fecal_ACPAs' = myColors[3],
+                             'Serum_Cytokines' = myColors[4],
+                             'Serum_Fatty_Acids' = myColors[5],
+                             'Stool_Fatty_Acids' = myColors[6],
+                             'Metagenomic_ASVs' = myColors[7],
+                             'Metagenomic_Pathways' = myColors[8]))
+  
+  column_ha <- HeatmapAnnotation(df = ann,
+                              which = 'col',
+                              col = colours,
+                              annotation_width = unit(c(1, 4), 'cm'),
+                              gap = unit(1, 'mm'))
+  
+  # column_ha = columnAnnotation(VarType=cols_anno)# = df_pc$pc1, bar1 = anno_barplot(df_pc$pc2))
+  
   col_fun_SJC = colorRamp2(c(0, 25), c("white", "red"))
   col_fun_TJC = colorRamp2(c(0, 27), c("white", "red"))
   row_ha = rowAnnotation(Diagnosis = df3$Diagnosis,

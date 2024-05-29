@@ -90,13 +90,21 @@ max.outlier <- function(x) {
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/"
 
 # read in df
-df = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/inter_intra_beta_dist.tsv', 
+df = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/intra_beta_dist.tsv', 
                       sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                       na.strings = "NA")
 
+# rename factors
+df$category[df$category == 'intra_UA_only'] <- "Intra-Unaffected"
+df$category[df$category == 'intra_RA_only'] <- "Intra-RA"
+df$category[df$category == 'intra_twin_pair'] <- "Intra-Twin"
+
+# fix order of plotting
+df$category <- factor(df$category, levels = c("Intra-Twin", "Intra-RA", "Intra-Unaffected")) 
+
 # background theme
 bkg <- theme_bw() +
-  theme(axis.text.x = element_text(size = 12, face = "bold", color = "black")) +
+  theme(axis.text.x = element_text(size = 8, face = "bold", color = "black")) +
   theme(axis.text.y = element_text(size = 10, color = "black")) +
   theme(axis.title.y = element_text(size = 12, color = "black", face = "bold")) +
   theme(axis.title.y = element_text(margin = unit(c(0, 8, 0, 0), "mm"))) +
@@ -107,6 +115,7 @@ bkg <- theme_bw() +
 col1 <- c("#929aab", "#ce2525")
 col2 <- c("#CD3414", "#0074e4", "#8f8787")
 col2 <- c("#CD3414", "#8f8787", "#0074e4")
+col2 <- c("#0074e4", "#CD3414", "#8f8787")
 
 # for every plasma analyte in the table, calculate the change in abundance between siblings
 for (i in 1:1) {
@@ -125,10 +134,10 @@ for (i in 1:1) {
     stat_summary(fun.data = stats.boxplot, geom = "crossbar", 
                  color = "black", size = 0.5, width = 0.5) +
     geom_jitter(width = 0.1, size = 1.5) +
-    scale_x_discrete(labels = c("Inter-RA", "Inter-UA only", "Intra-Twin")) +
+    scale_x_discrete(labels = c("Intra-Twin", "Intra-RA", "Intra-Unaffected")) +
     scale_fill_manual(values = col2) +      
     xlab(NULL) +
-    ylab('Distance') +
+    ylab('Bray Curtis Difference') +
     bkg
   
   fpb = paste(dir, filename_box.plot, sep = "")
