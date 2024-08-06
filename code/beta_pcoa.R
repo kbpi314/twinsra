@@ -70,6 +70,9 @@ col1 <- c("#929aab", "#ce2525")
 df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/bray_curtis_pcoa.tsv",
               row.names=1)
 
+# order factors for legend
+df$Diagnosis <- factor(df$Diagnosis, levels=c('Unaffected', 'RA'))
+
 for (j in seq_along(dists)) {
   
   # create filenames

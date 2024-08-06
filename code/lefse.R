@@ -41,6 +41,7 @@ names(data) <- c("RawTaxa", "X", "Diagnosis", "LDA", "pval")
 plot_data <- subset(data, !is.na(data$LDA))
 plot_data <- subset(data, RawTaxa %in% 'k__Bacteria.p__Proteobacteria.c__Deltaproteobacteria.o__Desulfovibrionales.f__Desulfovibrionaceae.g__Bilophila.s__Bilophila_wadsworthia' |
                           RawTaxa %in% 'k__Bacteria.p__Firmicutes.c__Clostridia.o__Eubacteriales.f__Lachnospiraceae.g__Blautia.s__Blautia_faecis')
+plot_data <- subset(data, RawTaxa %in% 'k__Bacteria.p__Firmicutes.c__Clostridia.o__Eubacteriales.f__Lachnospiraceae.g__Blautia.s__Blautia_faecis')
 
 
 taxa_strs <- list()
@@ -91,13 +92,14 @@ Diagnosis.colors <- c(RA = "#CD3414", Unaffected = "#929aab")
 plot_data$Diagnosis <- factor(plot_data$Diagnosis, levels = c('Unaffected', 'RA'))
 
 # RAvH
-pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs06/lefse_pretty_filt.pdf", width=8, height=6)
+pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs06/lefse_pretty_filt.pdf", width=8, height=4)
 
 p <- ggbarplot(plot_data, x="Taxa", y="LDA", fill="Diagnosis", width= 1, color = "white", sort.val = "asc", sort.by.Diagnosiss=TRUE) +  
   labs(x = "", y = "LDA score", fill="Diagnosis") + coord_flip() + 
   #scale_fill_manual(name="Legend", values = c("RA", "Unaffected')")) +
   # scale_fill_manual(values=c("#E69F00",'#B3A98C','#605843')) + bkg # flip around as need be
   # scale_fill_manual(values=c("#B3A98C",'#E69F00','#605843')) + bkg # flip around as need be
-  scale_fill_manual(values=Diagnosis.colors) + bkg
+  scale_fill_manual(values=Diagnosis.colors) + bkg + 
+  theme(aspect.ratio = 1/4)
 plot(p)
 dev.off()

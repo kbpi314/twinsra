@@ -11,8 +11,8 @@ library(MASS)
 
 setwd('~/Desktop/clemente_lab/Projects/twinsra/')
 
-dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'mb', 'quant_R', 'asv_filt', 'path_filt')
-dfs = c('quant_R')
+dfs = c('olink', 'fa', 'acpa_fecal', 'acpa_plasma', 'mb', 'quant_R', 'asv_filt', 'path_filt', 'asv', 'path')
+# dfs = c('quant_R')
 # dfs = c('olink')
 # dfs = c('acpa_fecal')
 # df_quant_meta is just a copy of df_quant
@@ -48,6 +48,9 @@ for(i in 1:length(dfs)){
   df_meta <- df2[1:3]
   # playtesting dataset
   # df_feat <- df2[1:20]
+  
+  # convert all col to numeric
+  df_feat[] <- lapply(df_feat, as.numeric)
   
   # normalize columns
   df_feat_norm<- scale(df_feat)
@@ -87,7 +90,7 @@ for(i in 1:length(dfs)){
   colours <- list('Type' = c('Clinical' = myColors[1], 
                              'Plasma_ACPAs' = myColors[2],
                              'Fecal_ACPAs' = myColors[3],
-                             'Serum_Cytokines' = myColors[4],
+                             'Plasma_Cytokines' = myColors[4],
                              'Serum_Fatty_Acids' = myColors[5],
                              'Stool_Fatty_Acids' = myColors[6],
                              'Metagenomic_ASVs' = myColors[7],
@@ -103,10 +106,12 @@ for(i in 1:length(dfs)){
   
   col_fun_SJC = colorRamp2(c(0, 25), c("white", "red"))
   col_fun_TJC = colorRamp2(c(0, 27), c("white", "red"))
+  # order diagnosis
+  df3$Diagnosis = factor(df3$Diagnosis, levels = c('Unaffected','RA'))
   row_ha = rowAnnotation(Diagnosis = df3$Diagnosis,
                          SJC = df_meta$SJC,
                          TJC = df_meta$TJC,   
-                         col = list(Diagnosis = c("RA" = "red", "Unaffected" = "grey"),
+                         col = list(Diagnosis = c("Unaffected" = "grey", "RA" = "red"),
                                     SJC = col_fun_SJC, #c(1:max(df_meta$SJC)),
                                     TJC = col_fun_TJC)) #c(1:max(df_meta$TJC))))
 
