@@ -88,12 +88,12 @@ for(i in 1:length(dfs)){
   ann <- data.frame(cols_anno)
   colnames(ann) <- c('Type')#, 'Type2')
   colours <- list('Type' = c('Clinical' = myColors[1], 
-                             'Plasma_ACPAs' = myColors[2],
-                             'Fecal_ACPAs' = myColors[3],
+                             'Plasma_Autoantibodies' = myColors[2],
+                             'Fecal_Autoantibodies' = myColors[3],
                              'Plasma_Cytokines' = myColors[4],
                              'Serum_Fatty_Acids' = myColors[5],
                              'Stool_Fatty_Acids' = myColors[6],
-                             'Metagenomic_ASVs' = myColors[7],
+                             'Metagenomic_Taxa' = myColors[7],
                              'Metagenomic_Pathways' = myColors[8]))
   
   column_ha <- HeatmapAnnotation(df = ann,
