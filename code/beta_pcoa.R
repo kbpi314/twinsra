@@ -80,9 +80,9 @@ for (j in seq_along(dists)) {
   
   # plot beta diversity
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
-    geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
+    geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis, shape = sib_02),size=4) +
     scale_color_manual(values = c("Unaffected" = "#929aab", "RA" = "#ce2525")) + #col1, labels = c("Unaffected", "RA")) +
-    bkg +
+    bkg + guides(shape = "none") + 
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis
   

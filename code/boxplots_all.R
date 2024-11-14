@@ -128,11 +128,11 @@ for (k in 1:length(paths)){
   d.clean <- d.clean[!d.clean$Sibling_pair == "sib_09",] # remove 516, 517
   
   # create tables for storing wilcoxon and ttest results
-  stats.table.all <- matrix(data = NA, nrow = nvar, ncol = 3)
-  colnames(stats.table.all) <- c("feature", "wilcoxon", "ttest")
+  stats.table.all <- matrix(data = NA, nrow = nvar, ncol = 5)
+  colnames(stats.table.all) <- c("feature", "wilcoxon", "ttest", "wilcox stat", "ttest stat")
   
-  stats.table.clean <- matrix(data = NA, nrow = nvar, ncol = 3)
-  colnames(stats.table.clean) <- c("feature", "wilcoxon", "ttest")
+  stats.table.clean <- matrix(data = NA, nrow = nvar, ncol = 5)
+  colnames(stats.table.clean) <- c("feature", "wilcoxon", "ttest", "wilcox stat", "ttest stat")
   
   # calculate wilcoxon and ttest between Unaffected/RA siblings for each metabolite
   for (i in 1:nvar) {
@@ -141,9 +141,16 @@ for (k in 1:length(paths)){
     
     stats.table.all[i,2] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
     stats.table.clean[i,2] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
+
+    stats.table.all[i,4] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
+    stats.table.clean[i,4] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
     
     stats.table.all[i,3] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
     stats.table.clean[i,3] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
+    
+    stats.table.all[i,5] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
+    stats.table.clean[i,5] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
+  
   }
   
   # Calculate FDR-adjusted p-values using p.adjust

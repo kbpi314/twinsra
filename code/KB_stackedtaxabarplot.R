@@ -67,6 +67,7 @@ taxon_table = read_qza(file='/Users/KevinBu/Desktop/clemente_lab/Projects/twinsr
 sum_taxa = summarize_taxa(features=asv_table, taxonomy=taxon_table)
 sp_taxasums = sum_taxa$Species
 
+# if you don't want to use qza stuff you can make your own summarized stacked barplot dataframe
 sp_taxasums = read.csv(file='/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/inputs/df_q2R.tsv', 
                          sep='\t',
                          row.names='Species')
