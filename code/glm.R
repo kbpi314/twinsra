@@ -14,8 +14,19 @@ library(lme4)
 df <- read.csv('/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/inputs/df_lmer.csv')
 
 
+
+
+
 # glms
-model <- lm(formula = shannon_entropy_diff ~ MTX, data=df)
+model <- lm(formula = shannon_entropy ~ Diagnosis + MTX, data=df)# + 1|TwinPair, data=df)
+summary(model)
+
+model <- lm(formula = Diff ~ MTX, data=dfRA)# + 1|TwinPair, data=df)
+summary(model)
+
+
+
+model <- lmer(formula = shannon_entropy ~ Diagnosis + MTX + (1|TwinPair), data=df)
 summary(model)
 
 # glms

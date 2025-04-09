@@ -7,11 +7,11 @@
 
 ### Load libraries ###
 library(reshape2)
-library(phyloseq)
+# library(phyloseq)
 library(vegan)
-library(ade4)
-library(PMCMR)
-library(PMCMRplus)
+# library(ade4)
+# library(PMCMR)
+# library(PMCMRplus)
 library(ggplot2)
 library(ggthemes)
 library(ggrepel)
@@ -89,12 +89,18 @@ add_significance <- function(p_value) {
 ############################################################################
 
 ### all data
-paths = c('8_metabolites', '10_acpa_fecal', '11_acpa_plasma', '12_olink', '13_metabolon', '15_taxa', '16_path')
-offsets = c(3, 3, 3, 3, 2, 2, 2)
-nvars = c(11, 116, 116, 86, 10, 690, 327)
-sizes = c(24, 16, 16, 24, 16, 24, 16)
-units = c(" abundance (nmol/mg)", " abundance (MFI)", " abundance (MFI)", " level (NPX)", " abundance (ng/ml)", " abundance", "")
-data_fp = c("metabolites.txt", "acpa_fecal.txt", "acpa_plasma.txt", "olink.tsv", "metabolon.tsv", "taxa.tsv", "path.tsv")
+paths = c('8_metabolites', '10_acpa_fecal', '11_acpa_plasma', '12_olink', '13_metabolon', '15_taxa', '16_path', '17_ko',
+          'L2_taxa', 'L3_taxa', 'L4_taxa', 'L5_taxa', 'L6_taxa', 'L7_taxa')
+offsets = c(3, 3, 3, 3, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 2)
+nvars = c(11, 116, 116, 86, 10, 690, 327, 429,
+          14, 119, 134, 160, 425, 690)
+sizes = c(24, 16, 16, 24, 16, 24, 16, 16,
+          16, 16, 16, 16, 16, 16)
+units = c(" abundance (nmol/mg)", " abundance (MFI)", " abundance (MFI)", " level (NPX)", " abundance (ng/ml)", " abundance", " abundance",
+          " abundance", " abundance", " abundance", " abundance", " abundance", " abundance")
+data_fp = c("metabolites.txt", "acpa_fecal.txt", "acpa_plasma.txt", "olink.tsv", "metabolon.tsv", "taxa.tsv", "path.tsv", 'ko.tsv',
+            'L2_taxa.tsv','L3_taxa.tsv','L4_taxa.tsv', 'L5_taxa.tsv','L6_taxa.tsv','L7_taxa.tsv')
 
 ### statistics ###
 # put a 7 here instead of 1 for pathways only
@@ -111,7 +117,7 @@ for (k in 1:length(paths)){
   
   # read in data table
   d <- read.table(file = paste(dir, data, sep = ""),
-                  header = TRUE, row.names = 1, sep = "\t", check.names = FALSE,
+                  header = TRUE, row.names = 1, sep = "\t", check.names = FALSE, # maybe set to true next time lol
                   na.strings = "NA")
   
   # create dataframes
@@ -139,23 +145,54 @@ for (k in 1:length(paths)){
     stats.table.all[i,1] <- colnames(d.all)[i+offset]
     stats.table.clean[i,1] <- colnames(d.clean)[i+offset]
     
-    stats.table.all[i,2] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
-    stats.table.clean[i,2] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
+    #stats.table.all[i,2] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
+    #stats.table.clean[i,2] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
 
-    stats.table.all[i,4] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
-    stats.table.clean[i,4] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
+    #stats.table.all[i,4] <- wilcox.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
+    #stats.table.clean[i,4] <- wilcox.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
     
-    stats.table.all[i,3] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
-    stats.table.clean[i,3] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
+    #stats.table.all[i,3] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$p.value
+    #stats.table.clean[i,3] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$p.value
     
-    stats.table.all[i,5] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
-    stats.table.clean[i,5] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
+    #stats.table.all[i,5] <- t.test(d.all[,i+offset] ~ Diagnosis, data = d.all, paired = TRUE)$statistic
+    #stats.table.clean[i,5] <- t.test(d.clean[,i+offset] ~ Diagnosis, data = d.clean, paired = TRUE)$statistic
   
+    stats.table.all[i,2] <- wilcox.test(x=d.all[d.all$Diagnosis == 'Unaffected',][,i+offset], 
+                                        y=d.all[d.all$Diagnosis == 'RA',][,i+offset],
+                                        paired=TRUE)$p.value
+    stats.table.clean[i,2] <- wilcox.test(x=d.clean[d.clean$Diagnosis == 'Unaffected',][,i+offset], 
+                                          y=d.clean[d.clean$Diagnosis == 'RA',][,i+offset],
+                                          paired=TRUE)$p.value
+    
+    stats.table.all[i,4] <- wilcox.test(x=d.all[d.all$Diagnosis == 'Unaffected',][,i+offset], 
+                                        y=d.all[d.all$Diagnosis == 'RA',][,i+offset],
+                                        paired=TRUE)$statistic
+    stats.table.clean[i,4] <- wilcox.test(x=d.clean[d.clean$Diagnosis == 'Unaffected',][,i+offset], 
+                                          y=d.clean[d.clean$Diagnosis == 'RA',][,i+offset],
+                                          paired=TRUE)$statistic
+    
+    stats.table.all[i,3] <- t.test(x=d.all[d.all$Diagnosis == 'Unaffected',][,i+offset], 
+                                   y=d.all[d.all$Diagnosis == 'RA',][,i+offset],
+                                   paired=TRUE)$p.value
+    stats.table.clean[i,3] <- t.test(x=d.clean[d.clean$Diagnosis == 'Unaffected',][,i+offset], 
+                                     y=d.clean[d.clean$Diagnosis == 'RA',][,i+offset],
+                                     paired=TRUE)$p.value
+    
+    stats.table.all[i,5] <- t.test(x=d.all[d.all$Diagnosis == 'Unaffected',][,i+offset], 
+                                   y=d.all[d.all$Diagnosis == 'RA',][,i+offset],
+                                   paired=TRUE)$statistic
+    stats.table.clean[i,5] <- t.test(x=d.clean[d.clean$Diagnosis == 'Unaffected',][,i+offset], 
+                                     y=d.clean[d.clean$Diagnosis == 'RA',][,i+offset],
+                                     paired=TRUE)$statistic
+      
   }
   
   # Calculate FDR-adjusted p-values using p.adjust
-  if (path == '15_taxa'){
-    adjusted_p_values <- p.adjust(stats.table.clean[,2], method = "fdr")
+  v = c('15_taxa', '16_path', '17_ko', 'L2_taxa', 'L3_taxa', 'L4_taxa', 'L5_taxa', 'L6_taxa')
+  
+  #   if (path == '15_taxa'){
+  if (path %in% v){
+      adjusted_p_values <- p.adjust(stats.table.clean[,2], method = "fdr")
   }
   else {
     adjusted_p_values <- p.adjust(stats.table.clean[,3], method = "fdr")
