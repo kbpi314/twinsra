@@ -1,11 +1,3 @@
-################################# 
-## R script                    ##
-## Project: TwinsRA            ##
-## LEfSe                       ##
-## Data: Shotgun metagenomics  ##
-## Author: KB.                 ##
-## Last Updated: 5/9/24        ##
-#################################
 
 library(ggplot2)
 library(dplyr)
@@ -34,52 +26,79 @@ bkg <-
 ####
 
 # RAvH
-data <- read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/inputs/TwinsUK_KEGG_pathway_summary.txt", sep='\t', header=TRUE)
-plot_data <- subset(data, data$Wilcox_p_value < 0.05)
+# data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs06/lefse_results.res", header = FALSE, sep = "\t")
 
-split_line <- function(x) {
-  return(strsplit(x, split="\\|")[[1]][3])
-}
+data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/inputs/lefse_uk.tsv", header = TRUE, sep = "\t")
+ 
 
-replace_us <- function(x) {
-  return(gsub(x=x,pattern="_",' '))
-}
+# names(data) <- c("RawTaxa", "X", "Diagnosis", "LDA", "pval")
+names(data) <- c("RawTaxa","group", "LDA", "pval")
+data$Diagnosis <- data$group
+data$Diagnosis[data$Diagnosis == "Affected"] <- "RA"
 
+# keep all strings with species but not sub
+data <- data[grepl("\\.s__", data$RawTaxa) & !grepl("\\.t__", data$RawTaxa), ]
+
+
+plot_data <- subset(data, !is.na(data$LDA))
 #plot_data <- subset(data, RawTaxa %in% 'k__Bacteria.p__Proteobacteria.c__Deltaproteobacteria.o__Desulfovibrionales.f__Desulfovibrionaceae.g__Bilophila.s__Bilophila_wadsworthia' |
 #                          RawTaxa %in% 'k__Bacteria.p__Firmicutes.c__Clostridia.o__Eubacteriales.f__Lachnospiraceae.g__Blautia.s__Blautia_faecis')
 #plot_data <- subset(data, RawTaxa %in% 'k__Bacteria.p__Firmicutes.c__Clostridia.o__Eubacteriales.f__Lachnospiraceae.g__Blautia.s__Blautia_faecis')
-plot_data[plot_data=="Metabolism|Carbohydrate_metabolism|Propanoate_metabolism"] <- "Metabolism|Carbohydrate_metabolism|Propionate_metabolism"        
-
-# Apply the function to the 'strings' column
-plot_data$feature <- sapply(plot_data$Variable, split_line)
-plot_data$finalfeature <- sapply(plot_data$feature, replace_us)
 
 
 
-# add logp value
-plot_data$logp = -1*log(plot_data$Wilcox_p_value,base=10)
+taxa_strs <- list()
+for (raw in plot_data$RawTaxa) {
+  split <- as.character(unlist(str_split(raw, "\\.")))
+  i <- length(split)
+  blanks <- 0
+  while (i > 0) {
+    if (split[i] == "__") {
+      blanks <- blanks + 1
+      print(split)
+      split <- split[1:i-1]
+      print(split)
+    }        
+    else {
+      break
+    }
+    i <- i - 1
+  }
+  
+  if (length(split) == 1) {
+    taxa_str <- split[1]
+  }
+  else {
+    taxa_str <- paste(split[length(split)-1], split[length(split)])
+  }
+  if (blanks > 0) {
+    for (i in 1:blanks) {
+      taxa_str <- paste(taxa_str, "__uncl.", sep="")
+    }
+  }
+  taxa_strs <- append(taxa_strs, taxa_str)
+}
+plot_data$Taxa <- as.character(taxa_strs)
 
-# negative t statistic is enriched in UA
-plot_data$logp <- sign(plot_data$t_statistic.t) * plot_data$logp
+split_string <- function(x) {
+  return(strsplit(x, "s__")[[1]][2])
+}
 
-# create diagnosis
-plot_data <- plot_data %>%
-  mutate(Diagnosis = case_when(
-    t_statistic.t > 0 ~ "RA",
-    t_statistic.t < 0 ~ "Unaffected",
-    TRUE ~ "zero"
-  ))
+plot_data$Taxa <- sapply(plot_data$Taxa,split_string)
+plot_data$Taxa <- gsub("_", " ", plot_data$Taxa)
+
+# plot_data$Taxa <- sub(".*_s__", '', plot_data$RawTaxa)
+plot_data[plot_data$Diagnosis == "Unaffected",]$LDA <- -1 * plot_data[plot_data$Diagnosis == "Unaffected",]$LDA
+
 # set colors and factors
 Diagnosis.colors <- c(RA = "#CD3414", Unaffected = "#929aab")
 plot_data$Diagnosis <- factor(plot_data$Diagnosis, levels = c('Unaffected', 'RA'))
 
 # RAvH
-pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs06/lefse_pretty_filt_path_UK.pdf", width=16, height=8)
+pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs06/lefse_pretty_filt_UK.pdf", width=16, height=8)
 
-# p <- ggbarplot(plot_data, x="Pathway", y="wilcoxshift", fill="Diagnosis", width= 1, color = "white", sort.val = "asc", sort.by.Diagnosiss=TRUE) +  
-p <- ggbarplot(plot_data, x="finalfeature", y="logp", fill="Diagnosis", width= 1, color = "white", sort.val = "asc", sort.by.Diagnosiss=TRUE) +  
-  # labs(x = "", y = "Effect Size", fill="Diagnosis") + coord_flip() + 
-  labs(x = "", y = "-log10(p) * sgn(enrichment)", fill="Diagnosis") + coord_flip() + 
+p <- ggbarplot(plot_data, x="Taxa", y="LDA", fill="Diagnosis", width= 1, color = "white", sort.val = "asc", sort.by.Diagnosiss=TRUE) +  
+  labs(x = "", y = "LDA score", fill="Diagnosis") + coord_flip() + 
   #scale_fill_manual(name="Legend", values = c("RA", "Unaffected')")) +
   # scale_fill_manual(values=c("#E69F00",'#B3A98C','#605843')) + bkg # flip around as need be
   # scale_fill_manual(values=c("#B3A98C",'#E69F00','#605843')) + bkg # flip around as need be

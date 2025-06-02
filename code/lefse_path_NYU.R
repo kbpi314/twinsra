@@ -38,6 +38,7 @@ data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/
 
 names(data) <- c("Pathway", "X", "Diagnosis", "wilcoxshift", "pval")
 
+plot_data <- data
 # plot_data <- subset(data, !is.na(data$wilcoxshift))
 
 #plot_data <- subset(data, RawTaxa %in% 'k__Bacteria.p__Proteobacteria.c__Deltaproteobacteria.o__Desulfovibrionales.f__Desulfovibrionaceae.g__Bilophila.s__Bilophila_wadsworthia' |

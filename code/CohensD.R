@@ -34,6 +34,6 @@ p <- ggplot(df, aes(x = Value, y = feature, fill = Direction)) +
   theme_minimal()
 
 fbp = paste(dir, 'outputs/jobs02/CD.pdf', sep = "")
-pdf(file = fbp, height = 5, width = 6)
+pdf(file = fbp, height = 5, width = 12)
 plot(p)
 dev.off()

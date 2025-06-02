@@ -67,7 +67,7 @@ dists <- c('unifrac')
 col1 <- c("#929aab", "#ce2525")
 
 # load data
-df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/bray_curtis_pcoa.tsv",
+df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/outputs/jobs02/bray_curtis_pcoa_UK.tsv",
               row.names=1)
 
 # order factors for legend
@@ -76,16 +76,16 @@ df$Diagnosis <- factor(df$Diagnosis, levels=c('Unaffected', 'RA'))
 for (j in seq_along(dists)) {
   
   # create filenames
-  filename_plot = paste("bdiv", dists[j], "plot.pdf", sep = "_")
+  filename_plot = paste("bdiv", dists[j], "plot_UK.pdf", sep = "_")
   
   # plot beta diversity
   p <- ggplot(data=df, aes(x=PC1, y=PC2)) + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
-    geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis, shape = sib_02),size=4) +
+    geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
     geom_line(aes(group = TwinPair), lty = 2, colour = "black") + 
     scale_color_manual(values = c("Unaffected" = "#929aab", "RA" = "#ce2525")) + #col1, labels = c("Unaffected", "RA")) +
     bkg + guides(shape = "none") + 
-    xlab(paste0('PC1 (','22.5', '%)')) +
-    ylab(paste0('PC2 (','12.6', '%)')) +
+    xlab(paste0('PC1 (','21.6', '%)')) +
+    ylab(paste0('PC2 (','16.6', '%)')) +
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis
   
